@@ -3,7 +3,6 @@
 #include <string>
 #include <bitset>
 #include <algorithm>
-#include <map>
 using namespace std;
 #define SEARCHBUFFER_SIZE 4096
 #define LOCK_A_HEAD_SIZE 16
@@ -64,9 +63,51 @@ public:
             }
         }
     }
+    static void LZ77_DEC(wifstream &ENCODED_FILE, wostream &FINAL_OUTPUT)
+    {
+        cout << "DECODING start " << '\n';
+        wchar_t TEMP_CODE[2];
+        wchar_t CURRENT_BYTE[1];
+        int MASTER = 0, AUX;
+        wstring OUT_STRING;
+        pair<int, int> J_L;
+        while (ENCODED_FILE.read(CURRENT_BYTE, 1))
+        {
+            if (CURRENT_BYTE[0] == 0x00)
+            {
+                ENCODED_FILE.read(CURRENT_BYTE, 1);
+                cout << CURRENT_BYTE[0];
+                OUT_STRING.append(1, CURRENT_BYTE[0]);
+                MASTER++;
+            }
+            else
+            {
+                TEMP_CODE[0] = CURRENT_BYTE[0];
+                ENCODED_FILE.read(CURRENT_BYTE, 1);
+                TEMP_CODE[1] = CURRENT_BYTE[0];
+                J_L = GET_JUMP_LENGTH(TEMP_CODE);
+                AUX = MASTER - J_L.first;
+                for (int i = 0; i < J_L.second; i++)
+                {
+                    cout << OUT_STRING[AUX];
+                    OUT_STRING.append(1, OUT_STRING[AUX++]);
+                    MASTER++;
+                }
+                ENCODED_FILE.read(CURRENT_BYTE, 1);
+                cout <<CURRENT_BYTE[0];
+                OUT_STRING.append(1, CURRENT_BYTE[0]);
+                MASTER++;
+            }
+        }
+        // for (size_t i = 0; i < OUT_STRING.size(); i++)
+        // {
+        //     cout << (char)OUT_STRING[i] << '\n';
+        // }
+    }
+
     static wchar_t *GET_CODE(int JUMP, int LENGTH, wchar_t BYTE)
     {
-        wchar_t *ARR=new wchar_t[3];
+        wchar_t *ARR = new wchar_t[3];
         uint16_t CODE = 0;
         JUMP = JUMP << 4;
         CODE = CODE | JUMP;
@@ -82,5 +123,14 @@ public:
         ARR[0] = 0x00;
         ARR[1] = BYTE;
         return ARR;
+    }
+    static pair<int, int> GET_JUMP_LENGTH(wchar_t *CODE)
+    {
+        uint8_t LENGTH = CODE[1] & 0x0f;
+        uint16_t JUMP = CODE[0];
+        JUMP = JUMP << 4;
+        uint8_t TEMP = (CODE[1] >> 4) & 0x0f;
+        JUMP |= TEMP;
+        return make_pair(JUMP, LENGTH);
     }
 };
