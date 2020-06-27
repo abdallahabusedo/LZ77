@@ -10,9 +10,9 @@ class ENCODING_LZ77
 {
 
 public:
-    static void LZ77_ENC(wstring String_TOENC, wofstream &ENCODED_FILE)
+    static void LZ77_ENC(string String_TOENC, ofstream &ENCODED_FILE)
     {
-        wchar_t chars = String_TOENC[0];
+        char chars = String_TOENC[0];
         ENCODED_FILE.write(GET_CODE(chars), 2);
         int SEARCHBUFFER_REVERSE = 0, LOOK_A_HEAD_F = 1, LOOK_A_HEAD_M = 1, SEARCHBUFFER_FORWORD;
         int JUMP_COUNT = 0, LENGTH_COUNT = 0, CURRENT_LENGTH_COUNTER = 0, CURRENT_JUMP_COUNTER = 0, JUMPLENGTH;
@@ -63,12 +63,12 @@ public:
             }
         }
     }
-    static void LZ77_DEC(wstring ENCODED_FILE, wofstream &FINAL_OUTPUT)
+    static void LZ77_DEC(string ENCODED_FILE, ofstream &FINAL_OUTPUT)
     {
-        wchar_t TEMP_CODE[2];
-        wchar_t CURRENT_BYTE[1];
+        char TEMP_CODE[2];
+        char CURRENT_BYTE[1];
         int MASTER = 0, AUX;
-        wstring OUT_STRING;
+        string OUT_STRING;
         pair<int, int> J_L;
         while (MASTER < ENCODED_FILE.size())
         {
@@ -105,10 +105,10 @@ public:
         //FINAL_OUTPUT << OUT_STRING.c_str();
     }
 
-    static wchar_t *GET_CODE(int JUMP, int LENGTH, wchar_t BYTE)
+    static char *GET_CODE(int JUMP, int LENGTH, char BYTE)
     {
         // cout << JUMP << " " << LENGTH << '\n';
-        wchar_t *ARR = new wchar_t[3];
+        char *ARR = new char[3];
         uint16_t CODE = 0;
         JUMP = JUMP << 4;
         CODE = CODE | JUMP;
@@ -118,14 +118,14 @@ public:
         ARR[2] = BYTE;
         return ARR;
     }
-    static wchar_t *GET_CODE(wchar_t BYTE)
+    static char *GET_CODE(char BYTE)
     {
-        wchar_t *ARR = new wchar_t[2];
+        char *ARR = new char[2];
         ARR[0] = 0x00;
         ARR[1] = BYTE;
         return ARR;
     }
-    static pair<int, int> GET_JUMP_LENGTH(wchar_t *CODE)
+    static pair<int, int> GET_JUMP_LENGTH(char *CODE)
     {
         //cout << "CODE"<< (wint_t)CODE[0] << " " << (wint_t)CODE[1] << '\n';
         uint8_t LENGTH = CODE[1] & 0x0f;
