@@ -63,50 +63,51 @@ public:
             }
         }
     }
-    static void LZ77_DEC(wifstream &ENCODED_FILE, wostream &FINAL_OUTPUT)
+    static void LZ77_DEC(wstring ENCODED_FILE, wofstream &FINAL_OUTPUT)
     {
-        cout << "DECODING start " << '\n';
         wchar_t TEMP_CODE[2];
         wchar_t CURRENT_BYTE[1];
         int MASTER = 0, AUX;
         wstring OUT_STRING;
         pair<int, int> J_L;
-        while (ENCODED_FILE.read(CURRENT_BYTE, 1))
+        while (MASTER < ENCODED_FILE.size())
         {
             if (CURRENT_BYTE[0] == 0x00)
             {
-                ENCODED_FILE.read(CURRENT_BYTE, 1);
-                cout << CURRENT_BYTE[0];
-                OUT_STRING.append(1, CURRENT_BYTE[0]);
+                // wcout << CURRENT_BYTE[0];
+                OUT_STRING = ENCODED_FILE[MASTER];
                 MASTER++;
+                FINAL_OUTPUT << OUT_STRING.c_str();
             }
             else
             {
+                cout << " matching \n";
+                CURRENT_BYTE[0] = ENCODED_FILE[MASTER];
                 TEMP_CODE[0] = CURRENT_BYTE[0];
-                ENCODED_FILE.read(CURRENT_BYTE, 1);
+                MASTER++;
+                CURRENT_BYTE[0] = ENCODED_FILE[MASTER];
                 TEMP_CODE[1] = CURRENT_BYTE[0];
+                MASTER++;
                 J_L = GET_JUMP_LENGTH(TEMP_CODE);
                 AUX = MASTER - J_L.first;
                 for (int i = 0; i < J_L.second; i++)
                 {
-                    cout << OUT_STRING[AUX];
-                    OUT_STRING.append(1, OUT_STRING[AUX++]);
-                    MASTER++;
+                    // wcout << OUT_STRING[AUX];
+                    OUT_STRING[MASTER++] = OUT_STRING[AUX++];
                 }
-                ENCODED_FILE.read(CURRENT_BYTE, 1);
-                cout <<CURRENT_BYTE[0];
-                OUT_STRING.append(1, CURRENT_BYTE[0]);
+                CURRENT_BYTE[0] = ENCODED_FILE[MASTER];
+                // wcout << CURRENT_BYTE[0];
+                OUT_STRING = CURRENT_BYTE[0];
                 MASTER++;
+                FINAL_OUTPUT << OUT_STRING.c_str();
             }
         }
-        // for (size_t i = 0; i < OUT_STRING.size(); i++)
-        // {
-        //     cout << (char)OUT_STRING[i] << '\n';
-        // }
+        //FINAL_OUTPUT << OUT_STRING.c_str();
     }
 
     static wchar_t *GET_CODE(int JUMP, int LENGTH, wchar_t BYTE)
     {
+        // cout << JUMP << " " << LENGTH << '\n';
         wchar_t *ARR = new wchar_t[3];
         uint16_t CODE = 0;
         JUMP = JUMP << 4;
@@ -126,11 +127,13 @@ public:
     }
     static pair<int, int> GET_JUMP_LENGTH(wchar_t *CODE)
     {
+        //cout << "CODE"<< (wint_t)CODE[0] << " " << (wint_t)CODE[1] << '\n';
         uint8_t LENGTH = CODE[1] & 0x0f;
         uint16_t JUMP = CODE[0];
         JUMP = JUMP << 4;
         uint8_t TEMP = (CODE[1] >> 4) & 0x0f;
         JUMP |= TEMP;
+        cout << JUMP << " " << LENGTH << '\n';
         return make_pair(JUMP, LENGTH);
     }
 };
